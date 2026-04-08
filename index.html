@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuralTrack OS - Hand Tracking AI</title>
+    <!-- SEO Best Practices -->
+    <meta name="description" content="A real-time, browser-based hand tracking interface powered by MediaPipe and modern web tech.">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- MediaPipe dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div>
+                <h1>NEURAL<span>TRACK</span></h1>
+                <p>Real-time Hand Pose & Spatial Interaction</p>
+            </div>
+            <div class="header-status">
+                <div class="pulse"></div> Live Feed
+            </div>
+        </header>
+        
+        <main class="main-content">
+            <div class="video-container">
+                <video id="input_video" class="input_video" autoplay playsinline></video>
+                <canvas id="drawing_canvas" class="output_canvas" style="z-index: 8;"></canvas>
+                <canvas id="output_canvas" class="output_canvas" style="z-index: 10;"></canvas>
+                
+                <!-- Zone overlay lines -->
+                <div class="zone-line" id="line-1" style="top: 25%;"></div>
+                <div class="zone-line" id="line-2" style="top: 50%;"></div>
+                <div class="zone-line" id="line-3" style="top: 75%;"></div>
+            </div>
+
+            <aside class="status-panel">
+                <h2>Interaction Zones</h2>
+                <div class="indicator-container">
+                    <div class="indicator" id="ind-1">
+                        <div class="dot blue"></div>
+                        <span>Zone 1 (Alpha)</span>
+                    </div>
+                    <div class="indicator" id="ind-2">
+                        <div class="dot yellow"></div>
+                        <span>Zone 2 (Beta)</span>
+                    </div>
+                    <div class="indicator" id="ind-3">
+                        <div class="dot green"></div>
+                        <span>Zone 3 (Gamma)</span>
+                    </div>
+                    <div class="indicator" id="ind-4">
+                        <div class="dot pink"></div>
+                        <span>Zone 4 (Delta)</span>
+                    </div>
+                </div>
+                
+                <div class="metrics">
+                    <div class="metric-card">
+                        <h3>System Engine</h3>
+                        <p id="system-status">Initializing...</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Detection Target</h3>
+                        <p id="hand-status">None</p>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
