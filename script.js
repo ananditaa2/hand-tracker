@@ -1,8 +1,8 @@
 const videoElement = document.getElementsByClassName('input_video')[0];
-const canvasElement = document.getElementById('output_canvas');
+const canvasElement = document.getElementsByClassName('output_canvas')[0];
 const canvasCtx = canvasElement.getContext('2d');
-const drawingCanvas = document.getElementById('drawing_canvas');
-const drawingCtx = drawingCanvas.getContext('2d');
+const drawingCanvasElement = document.getElementById('drawing_canvas');
+const drawingCanvasCtx = drawingCanvasElement.getContext('2d');
 
 const statusText = document.getElementById('system-status');
 const handStatus = document.getElementById('hand-status');
@@ -22,31 +22,12 @@ const lines = [
 
 let activeZone = -1;
 let isPinching = false;
-let lastDrawPoint = null;
+let lastPinchPos = null;
 let lastPinchTime = 0;
-
-const drawingColors = ['#3b82f6', '#eab308', '#22c55e', '#ec4899']; // Blue, Yellow, Green, Pink
-let currentColor = drawingColors[0];
 
 // Helper to calculate distance
 function getDistance(p1, p2) {
     return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
-}
-
-function clearCanvas() {
-    drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-    
-    // Quick flash effect for feedback
-    const flash = document.createElement('div');
-    flash.style.position = 'fixed';
-    flash.style.inset = '0';
-    flash.style.backgroundColor = 'var(--text-primary)';
-    flash.style.zIndex = '9999';
-    flash.style.opacity = '0.3';
-    flash.style.transition = 'opacity 0.3s ease-out';
-    document.body.appendChild(flash);
-    setTimeout(() => { flash.style.opacity = '0'; }, 30);
-    setTimeout(() => { flash.remove(); }, 350);
 }
 
 function updateZones(zoneIndex) {
@@ -79,12 +60,12 @@ function updateZones(zoneIndex) {
 }
 
 function onResults(results) {
-    // Make sure canvas matches video size for accurate drawing
+    // Make sure canvases match video size
     if (canvasElement.width !== videoElement.videoWidth) {
         canvasElement.width = videoElement.videoWidth;
         canvasElement.height = videoElement.videoHeight;
-        drawingCanvas.width = videoElement.videoWidth;
-        drawingCanvas.height = videoElement.videoHeight;
+        drawingCanvasElement.width = videoElement.videoWidth;
+        drawingCanvasElement.height = videoElement.videoHeight;
     }
 
     canvasCtx.save();
@@ -98,7 +79,7 @@ function onResults(results) {
         for (const landmarks of results.multiHandLandmarks) {
             // Draw Hand Skeleton
             drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
-                color: '#22d3ee', // Cyan accent
+                color: '#22d3ee', 
                 lineWidth: 3
             });
             drawLandmarks(canvasCtx, landmarks, {
@@ -123,54 +104,70 @@ function onResults(results) {
 
             updateZones(currentZone);
 
-            // Pinch detection
-            if (distance < 0.05) { 
-                const currentPoint = {
-                    x: indexFingerTip.x * drawingCanvas.width,
-                    y: indexFingerTip.y * drawingCanvas.height
-                };
-
-                // Draw interaction point circle on tracking canvas
-                canvasCtx.beginPath();
-                canvasCtx.arc(currentPoint.x, currentPoint.y, 8, 0, 2 * Math.PI);
-                canvasCtx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                canvasCtx.fill();
-
+            // Pinch and Draw logic
+            if (distance < 0.06) { 
                 if (!isPinching) {
                     isPinching = true;
-                    
                     const now = Date.now();
+                    
+                    // Double pinch check (within 400ms)
                     if (now - lastPinchTime < 400) {
-                        // Double pinch detected
-                        clearCanvas();
-                        lastPinchTime = 0; // Reset
-                        lastDrawPoint = null;
-                        return; // Skip drawing this frame
-                    }
-                    lastPinchTime = now;
-                    lastDrawPoint = currentPoint;
-                } else {
-                    // Continue drawing
-                    if (lastDrawPoint) {
-                        currentColor = drawingColors[currentZone === -1 ? 0 : currentZone];
+                        // Clear Canvas
+                        drawingCanvasCtx.clearRect(0, 0, drawingCanvasElement.width, drawingCanvasElement.height);
+                        lastPinchTime = 0; // Prevent triple pinch match
                         
-                        drawingCtx.beginPath();
-                        drawingCtx.moveTo(lastDrawPoint.x, lastDrawPoint.y);
-                        drawingCtx.lineTo(currentPoint.x, currentPoint.y);
-                        drawingCtx.strokeStyle = currentColor;
-                        drawingCtx.lineWidth = 12;
-                        drawingCtx.lineCap = "round";
-                        drawingCtx.lineJoin = "round";
-                        drawingCtx.shadowBlur = 15;
-                        drawingCtx.shadowColor = currentColor;
-                        drawingCtx.stroke();
-                        drawingCtx.shadowBlur = 0; // Reset shadow for next frame to avoid bleeding
+                        // Visual feedback for clear
+                        document.querySelector('.app-container').style.filter = 'brightness(1.5)';
+                        setTimeout(() => { document.querySelector('.app-container').style.filter = 'none'; }, 150);
+                        
+                        lastPinchPos = null; // Don't draw line from here
+                    } else {
+                        lastPinchTime = now;
+                        lastPinchPos = null; // Start of a new stroke
                     }
-                    lastDrawPoint = currentPoint;
+                }
+                
+                // Draw interaction point circle on output_canvas (the visual pointer)
+                canvasCtx.beginPath();
+                canvasCtx.arc(indexFingerTip.x * canvasElement.width, indexFingerTip.y * canvasElement.height, 10, 0, 2 * Math.PI);
+                canvasCtx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                canvasCtx.fill();
+
+                // Drawing logic (if not a fresh clear)
+                if (lastPinchTime !== 0) {
+                    let color = '#ffffff';
+                    switch(currentZone) {
+                        case 0: color = '#3b82f6'; break; // Blue
+                        case 1: color = '#eab308'; break; // Yellow
+                        case 2: color = '#22c55e'; break; // Green
+                        case 3: color = '#ec4899'; break; // Pink
+                        default: color = '#22d3ee'; break; // Cyan (fallback)
+                    }
+
+                    const currentPos = {
+                        x: indexFingerTip.x * drawingCanvasElement.width,
+                        y: indexFingerTip.y * drawingCanvasElement.height
+                    };
+
+                    if (lastPinchPos) {
+                        drawingCanvasCtx.beginPath();
+                        drawingCanvasCtx.moveTo(lastPinchPos.x, lastPinchPos.y);
+                        drawingCanvasCtx.lineTo(currentPos.x, currentPos.y);
+                        drawingCanvasCtx.strokeStyle = color;
+                        drawingCanvasCtx.lineWidth = 6;
+                        drawingCanvasCtx.lineCap = 'round';
+                        drawingCanvasCtx.stroke();
+                    } else {
+                        drawingCanvasCtx.beginPath();
+                        drawingCanvasCtx.arc(currentPos.x, currentPos.y, 3, 0, 2 * Math.PI);
+                        drawingCanvasCtx.fillStyle = color;
+                        drawingCanvasCtx.fill();
+                    }
+                    lastPinchPos = currentPos;
                 }
             } else {
                 isPinching = false;
-                lastDrawPoint = null;
+                lastPinchPos = null;
             }
         }
     } else {

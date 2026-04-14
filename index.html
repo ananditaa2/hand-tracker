@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuralTrack OS - Gesture Framework</title>
+    <title>NeuralTrack OS - Hand Tracking AI</title>
     <!-- SEO Best Practices -->
-    <meta name="description" content="A robust browser-based computer vision framework for gesture abstraction and UI navigation.">
+    <meta name="description" content="A real-time, browser-based hand tracking interface powered by MediaPipe and modern web tech.">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     
@@ -16,13 +16,10 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Floating State Feedback -->
-        <div id="gesture-feedback" class="gesture-feedback">Awaiting Action</div>
-        
         <header class="app-header">
             <div>
                 <h1>NEURAL<span>TRACK</span></h1>
-                <p>System-Level Spatial Interaction Architecture</p>
+                <p>Real-time Hand Pose & Spatial Interaction</p>
             </div>
             <div class="header-status">
                 <div class="pulse"></div> Live Feed
@@ -32,53 +29,34 @@
         <main class="main-content">
             <div class="video-container">
                 <video id="input_video" class="input_video" autoplay playsinline></video>
-                <canvas id="output_canvas" class="output_canvas" style="z-index: 10;"></canvas>
+                <canvas id="drawing_canvas" class="drawing_canvas"></canvas>
+                <canvas id="output_canvas" class="output_canvas"></canvas>
                 
-                <!-- Zone overlay framework boundaries -->
-                <div class="zone-line" style="top: 33%;"></div>
-                <div class="zone-line" style="top: 66%;"></div>
+                <!-- Zone overlay lines -->
+                <div class="zone-line" id="line-1" style="top: 25%;"></div>
+                <div class="zone-line" id="line-2" style="top: 50%;"></div>
+                <div class="zone-line" id="line-3" style="top: 75%;"></div>
             </div>
 
-            <aside class="interaction-panel">
-                <h2>Framework State Target</h2>
-                <p class="instruction">Elevate/Lower hand to switch interaction mode.</p>
-                
+            <aside class="status-panel">
+                <h2>Interaction Zones</h2>
                 <div class="indicator-container">
-                    <div class="mode-indicator active" id="ind-media">
+                    <div class="indicator" id="ind-1">
                         <div class="dot blue"></div>
-                        <div class="mode-info">
-                            <strong>Media Mode (Top)</strong>
-                            <span>Swipe Left/Right = Skip Track</span>
-                            <span>Swipe Up/Down = Volume</span>
-                            <span>Pinch = Play/Pause</span>
-                        </div>
+                        <span>Zone 1 (Alpha)</span>
                     </div>
-                    <div class="mode-indicator" id="ind-scroll">
-                        <div class="dot green"></div>
-                        <div class="mode-info">
-                            <strong>Scroll Mode (Middle)</strong>
-                            <span>Swipe Up/Down = Scroll UI</span>
-                            <span>Pinch Hold = Lock Scope</span>
-                        </div>
-                    </div>
-                    <div class="mode-indicator" id="ind-presentation">
+                    <div class="indicator" id="ind-2">
                         <div class="dot yellow"></div>
-                        <div class="mode-info">
-                            <strong>Presentation (Bottom)</strong>
-                            <span>Swipe Left/Right = Nav Slides</span>
-                            <span>Pinch = Switch FS Mode</span>
-                        </div>
+                        <span>Zone 2 (Beta)</span>
                     </div>
-                </div>
-
-                <!-- Hidden audio tag for Media Control Demo -->
-                <audio id="demo-audio" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop></audio>
-
-                <!-- Demo Slide Element For Presentation Trigger Checks -->
-                <div id="presentation-container" class="presentation-box">
-                    <div class="slide active-slide"># 1 Welcome</div>
-                    <div class="slide"># 2 Data Point</div>
-                    <div class="slide"># 3 End Slide</div>
+                    <div class="indicator" id="ind-3">
+                        <div class="dot green"></div>
+                        <span>Zone 3 (Gamma)</span>
+                    </div>
+                    <div class="indicator" id="ind-4">
+                        <div class="dot pink"></div>
+                        <span>Zone 4 (Delta)</span>
+                    </div>
                 </div>
                 
                 <div class="metrics">
@@ -87,14 +65,13 @@
                         <p id="system-status">Initializing...</p>
                     </div>
                     <div class="metric-card">
-                        <h3>Lock Target</h3>
+                        <h3>Detection Target</h3>
                         <p id="hand-status">None</p>
                     </div>
                 </div>
             </aside>
         </main>
     </div>
-    <!-- Note: Type=module ensures modern isolated scoping allowing imports -->
-    <script type="module" src="main.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
