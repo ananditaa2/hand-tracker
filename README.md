@@ -1,4 +1,5 @@
 # NeuralTrack OS - Hand Tracking AI
+demo video: https://www.linkedin.com/posts/anandita02_computervision-ai-machinelearning-ugcPost-7448386208809959424-Q6s1?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFAY_hcBAZ135zQyQDvRaZBrCtqJ17OPpDo
 
 A real-time, browser-based hand tracking interface powered by MediaPipe and modern web technologies. This application uses computer vision to render a live hand-skeleton overlay on a camera feed and triggers interactive UI elements based on specific hand positions.
 
